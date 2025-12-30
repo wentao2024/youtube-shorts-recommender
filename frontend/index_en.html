@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 YouTube Shorts Recommender</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-video"></i> YouTube Shorts Recommender</h1>
+                <p class="subtitle">Personalized Video Recommendations using Collaborative Filtering</p>
+            </div>
+            <div class="status-indicator" id="statusIndicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Checking...</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <nav class="nav-menu">
+                    <button class="nav-item active" data-tab="recommend">
+                        <i class="fas fa-star"></i>
+                        <span>Recommendations</span>
+                    </button>
+                    <button class="nav-item" data-tab="recall">
+                        <i class="fas fa-search"></i>
+                        <span>Recall Analysis</span>
+                    </button>
+                    <button class="nav-item" data-tab="user-stats">
+                        <i class="fas fa-user"></i>
+                        <span>User Stats</span>
+                    </button>
+                    <button class="nav-item" data-tab="about">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About</span>
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Recommendations Tab -->
+                <div class="tab-content active" id="recommend-tab">
+                    <div class="card">
+                        <h2><i class="fas fa-magic"></i> Personalized Recommendations</h2>
+                        <div class="form-group">
+                            <label for="userId">User ID</label>
+                            <input type="number" id="userId" placeholder="Enter User ID (1-943)" min="1" max="943" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="topK">Number of Recommendations</label>
+                            <input type="number" id="topK" placeholder="Number of recommendations" min="1" max="100" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="customRecall"> Custom Recall Configuration
+                            </label>
+                        </div>
+                        <div class="recall-config" id="recallConfig" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Collaborative Filtering</label>
+                                    <input type="number" id="recallCf" value="200" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Popularity</label>
+                                    <input type="number" id="recallPopular" value="100" min="0">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>High Rating</label>
+                                    <input type="number" id="recallHighRating" value="100" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>User Similarity</label>
+                                    <input type="number" id="recallSimilarity" value="100" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="getRecommendations()">
+                            <i class="fas fa-rocket"></i> Get Recommendations
+                        </button>
+                    </div>
+
+                    <div class="card" id="recommendResults" style="display: none;">
+                        <h3>Recommendation Results</h3>
+                        <div class="results-header">
+                            <span id="resultsCount"></span>
+                            <button class="btn btn-small" onclick="exportResults()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                        <div class="recommendations-list" id="recommendationsList"></div>
+                    </div>
+                </div>
+
+                <!-- Recall Analysis Tab -->
+                <div class="tab-content" id="recall-tab">
+                    <div class="card">
+                        <h2><i class="fas fa-chart-line"></i> Recall Analysis</h2>
+                        <div class="form-group">
+                            <label for="recallUserId">User ID</label>
+                            <input type="number" id="recallUserId" placeholder="Enter User ID (1-943)" min="1" max="943" value="1">
+                        </div>
+                        <button class="btn btn-primary" onclick="getRecallAnalysis()">
+                            <i class="fas fa-search"></i> Analyze Recall
+                        </button>
+                    </div>
+
+                    <div class="card" id="recallResults" style="display: none;">
+                        <h3>Recall Results Statistics</h3>
+                        <div class="recall-stats" id="recallStats"></div>
+                        <div class="recall-details" id="recallDetails"></div>
+                    </div>
+                </div>
+
+                <!-- User Stats Tab -->
+                <div class="tab-content" id="user-stats-tab">
+                    <div class="card">
+                        <h2><i class="fas fa-user-chart"></i> User Statistics</h2>
+                        <div class="form-group">
+                            <label for="statsUserId">User ID</label>
+                            <input type="number" id="statsUserId" placeholder="Enter User ID (1-943)" min="1" max="943" value="1">
+                        </div>
+                        <button class="btn btn-primary" onclick="getUserStats()">
+                            <i class="fas fa-chart-bar"></i> Query Statistics
+                        </button>
+                    </div>
+
+                    <div class="card" id="userStatsResults" style="display: none;">
+                        <h3>User Statistics</h3>
+                        <div class="stats-grid" id="statsGrid"></div>
+                    </div>
+                </div>
+
+                <!-- About Tab -->
+                <div class="tab-content" id="about-tab">
+                    <div class="card">
+                        <h2><i class="fas fa-info-circle"></i> About the System</h2>
+                        <div class="about-content">
+                            <h3>System Overview</h3>
+                            <p>This is a collaborative filtering-based recommendation system for YouTube Shorts, using the MovieLens 100K dataset as a proxy.</p>
+                            
+                            <h3>Technology Stack</h3>
+                            <ul>
+                                <li><strong>Backend</strong>: FastAPI + Python</li>
+                                <li><strong>Recommendation Algorithm</strong>: SVD (Collaborative Filtering)</li>
+                                <li><strong>Recall Strategies</strong>: Multi-path recall (CF, Popularity, High Rating, User Similarity)</li>
+                                <li><strong>Frontend</strong>: HTML + CSS + JavaScript</li>
+                            </ul>
+
+                            <h3>Dataset Information</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="info-label">Users</span>
+                                    <span class="info-value">943</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Videos</span>
+                                    <span class="info-value">1,682</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Ratings</span>
+                                    <span class="info-value">100,000</span>
+                                </div>
+                            </div>
+
+                            <h3>API Endpoints</h3>
+                            <ul>
+                                <li><code>POST /recommend</code> - Get personalized recommendations</li>
+                                <li><code>POST /recall</code> - Get recall analysis</li>
+                                <li><code>GET /user/{user_id}/stats</code> - User statistics</li>
+                                <li><code>GET /health</code> - Health check</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div class="loading" id="loading" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Toast Message -->
+    <div class="toast" id="toast"></div>
+
+    <script src="app_en.js"></script>
+</body>
+</html>
+
