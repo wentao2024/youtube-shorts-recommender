@@ -69,25 +69,9 @@ htmlcov/
 # Documentation builds
 docs/_build/
 
-# Chinese documentation (keep only English)
-API使用指南.md
-API接口详解.md
-IMPLEMENTATION_SUMMARY.md
-README_ADVANCED.md
-START_GUIDE.md
-启动API服务.sh
-启动前端_简单方式.md
-启动前端.sh
-如何停止服务.md
-快速启动API.sh
-u_data_explanation.md
-explore_u_data.py
+# Temporary and test files
 test_*.py
 test_*.sh
-quick_start.py
-start.sh
-stop_api.sh
-setup_render.sh
-frontend/index.html
-frontend/app.js
+*.sh
+__pycache__/
 

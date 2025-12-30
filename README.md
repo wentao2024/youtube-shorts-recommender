@@ -1,11 +1,6 @@
 # 🎬 YouTube Shorts Recommender
 
-A production-ready recommendation system for short videos using collaborative filtering, built with FastAPI and deployed for easy access.
-
-## 🌐 Live Demo
-
-- **API Documentation**: [https://your-recommender.onrender.com/docs](https://your-recommender.onrender.com/docs)
-- **Streamlit Demo**: [https://your-recommender.streamlit.app](https://your-recommender.streamlit.app)
+A production-ready recommendation system for short videos using collaborative filtering, multi-path recall, and machine learning ranking models.
 
 ## ✨ Features
 
@@ -16,7 +11,6 @@ A production-ready recommendation system for short videos using collaborative fi
 - **LightGBM Ranking**: Advanced ranking model (optional)
 - **RESTful API**: FastAPI-based backend with interactive documentation
 - **Streamlit Demo**: Simple and intuitive web interface
-- **Production Ready**: Deployed on Render/Railway for easy access
 
 ## 🏗️ Architecture
 
@@ -69,18 +63,20 @@ python data_prep.py
 python train.py
 ```
 
-5. **Start API server**
-```bash
-cd src/api
-python app.py
-```
-
-6. **Run Streamlit demo** (in another terminal)
+5. **Run Streamlit demo**
 ```bash
 streamlit run streamlit_app.py
 ```
 
 Visit `http://localhost:8501` for the Streamlit interface.
+
+**Optional: Start API server**
+```bash
+cd src/api
+uvicorn app:app --reload
+```
+
+Visit `http://localhost:8000/docs` for API documentation.
 
 ## 📁 Project Structure
 
@@ -96,7 +92,6 @@ youtube-shorts-recommender/
 │       └── app.py                 # FastAPI application
 ├── data/                          # Dataset storage
 ├── models/                        # Saved models
-├── frontend/                      # Web frontend (optional)
 ├── data_prep.py                   # Data preprocessing
 ├── train.py                       # Model training
 ├── streamlit_app.py               # Streamlit demo
@@ -135,42 +130,13 @@ GET /health
 
 See full API documentation at `/docs` when the server is running.
 
-## 🚢 Deployment
-
-### Render.com (Recommended)
-
-1. Fork this repository
-2. Go to [Render.com](https://render.com)
-3. Create a new Web Service
-4. Connect your GitHub repository
-5. Use these settings:
-   - **Build Command**: `pip install -r requirements.txt && python data_prep.py && python train.py`
-   - **Start Command**: `cd src/api && uvicorn app:app --host 0.0.0.0 --port $PORT`
-6. Deploy!
-
-### Railway.app
-
-1. Fork this repository
-2. Go to [Railway.app](https://railway.app)
-3. Create a new project from GitHub
-4. Railway will auto-detect the configuration
-5. Deploy!
-
-### Hugging Face Spaces
-
-1. Create a new Space on [Hugging Face](https://huggingface.co/spaces)
-2. Upload your code
-3. Add `requirements.txt`
-4. Set Space SDK to "Streamlit"
-5. Deploy!
 
 ## 🛠️ Technology Stack
 
 - **Backend**: FastAPI, Python 3.12
 - **ML Framework**: scikit-surprise, LightGBM
 - **Data Processing**: pandas, numpy
-- **Frontend**: Streamlit, HTML/CSS/JavaScript
-- **Deployment**: Render.com / Railway.app
+- **Frontend**: Streamlit
 
 ## 📈 Performance
 
