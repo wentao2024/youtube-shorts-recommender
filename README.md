@@ -2,6 +2,17 @@
 
 A production-ready recommendation system for short videos using collaborative filtering, multi-path recall, and machine learning ranking models.
 
+## 📸 Screenshots
+
+### Recommendations
+![Recommendations](screenshots/recommendations.png)
+
+### Recall Analysis
+![Recall Analysis](screenshots/recall-analysis.png)
+
+### About Page
+![About Page](screenshots/about.png)
+
 ## ✨ Features
 
 - **Multi-path Recall System**: Combines collaborative filtering, popularity, high-rating, and user similarity strategies
