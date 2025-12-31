@@ -5,13 +5,13 @@ A production-ready recommendation system for short videos using collaborative fi
 ## 📸 Screenshots
 
 ### Recommendations
-![Recommendations](screenshots/recommendations.png)
+![Recommendations](https://github.com/wentao2024/youtube-shorts-recommender/blob/main/screenshots/recommendations.png?raw=true)
 
 ### Recall Analysis
-![Recall Analysis](screenshots/recall-analysis.png)
+![Recall Analysis](https://github.com/wentao2024/youtube-shorts-recommender/blob/main/screenshots/recall-analysis.png?raw=true)
 
 ### About Page
-![About Page](screenshots/about.png)
+![About Page](https://github.com/wentao2024/youtube-shorts-recommender/blob/main/screenshots/about.png?raw=true)
 
 ## ✨ Features
 
