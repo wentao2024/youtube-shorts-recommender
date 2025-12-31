@@ -14,15 +14,19 @@ sys.path.insert(0, str(project_root))
 
 # Import local modules
 USE_LOCAL = True
+IMPORT_ERROR = None
 try:
     from src.models.recall_system import MultiRecallSystem
     from recommend import get_recommendations as get_recommendations_local, load_movie_titles
     USE_LOCAL = True
 except ImportError as e:
     USE_LOCAL = False
-    st.warning(f"Local modules not available: {e}. Will use API mode.")
+    IMPORT_ERROR = str(e)
     # API Configuration (fallback)
-    API_BASE_URL = st.secrets.get("API_URL", "http://localhost:8000") if hasattr(st, 'secrets') else "http://localhost:8000"
+    try:
+        API_BASE_URL = st.secrets.get("API_URL", "http://localhost:8000") if hasattr(st, 'secrets') else "http://localhost:8000"
+    except:
+        API_BASE_URL = "http://localhost:8000"
 
 # Page configuration
 st.set_page_config(
@@ -67,6 +71,10 @@ st.markdown("""
 # Header
 st.markdown('<h1 class="main-header">🎬 YouTube Shorts Recommender</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Personalized Video Recommendations using Collaborative Filtering</p>', unsafe_allow_html=True)
+
+# Show import warning if needed (after Streamlit context is initialized)
+if not USE_LOCAL and IMPORT_ERROR:
+    st.warning(f"⚠️ Local modules not available: {IMPORT_ERROR}. Will use API mode.")
 
 # Sidebar
 with st.sidebar:
@@ -174,7 +182,7 @@ with tab1:
                         data = response.json()
                     else:
                         st.error(f"Error: {response.status_code} - {response.text}")
-                        return
+                        data = None
                 
                 if data:
                     
@@ -282,8 +290,10 @@ with tab2:
                         data = response.json()
                     else:
                         st.error(f"Error: {response.status_code}")
-                        return
-                    
+                        data = None
+                
+                # Display results (for both local and API mode)
+                if data:
                     st.success(f"✅ Total candidates: {data['total_candidates']}")
                     
                     # Statistics
@@ -351,8 +361,10 @@ with tab3:
                         data = response.json()
                     else:
                         st.error(f"Error: {response.status_code}")
-                        return
-                    
+                        data = None
+                
+                # Display results (for both local and API mode)
+                if data:
                     if 'message' in data:
                         st.warning(data['message'])
                     else:
@@ -376,9 +388,6 @@ with tab3:
                         })
                         st.bar_chart(chart_data.set_index('Metric'))
                         
-                else:
-                    st.error(f"Error: {response.status_code}")
-                    
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
 
