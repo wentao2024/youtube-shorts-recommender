@@ -36,11 +36,15 @@ env/
 # Data files (large)
 data/ml-100k/
 data/ml-100k.zip
+data/KuaiRec/
+data/KuaiRec 2.0/
 data/*.csv
 !data/.gitkeep
 
 # Models (large)
 models/*.pkl
+models/*.pth
+models/*.pt
 !models/.gitkeep
 
 # Logs

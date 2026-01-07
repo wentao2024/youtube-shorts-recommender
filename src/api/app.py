@@ -102,6 +102,7 @@ app.add_middleware(
 ranking_model: Optional[RankingModel] = None
 recall_system: Optional[MultiRecallSystem] = None
 use_ranking_model = False  # 是否使用排序模型
+use_advanced_models = False  # 是否使用高级模型（Two-Tower, BM25）
 
 
 # 请求/响应模型
@@ -128,8 +129,15 @@ class RecommendationRequest(BaseModel):
             "cf": 200,
             "popular": 100,
             "high_rating": 100,
-            "similarity": 100
+            "similarity": 100,
+            "two_tower": 200,
+            "bm25": 200
         }
+    )
+    use_advanced: bool = Field(
+        default=False,
+        description="Whether to use advanced models (Two-Tower, BM25)",
+        example=False
     )
     
     class Config:
@@ -251,20 +259,37 @@ async def startup_event():
                 use_ranking_model = False
                 # Directly initialize recall system (using absolute path from project root)
                 project_root = PathLib(__file__).parent.parent.parent
+                # 检查高级模型是否存在
+                two_tower_exists = (project_root / "models" / "two_tower_model.pth").exists()
+                bm25_exists = (project_root / "models" / "bm25_model.pkl").exists()
+                use_advanced_models = two_tower_exists and bm25_exists
+                
                 recall_system = MultiRecallSystem(
                     ratings_path=project_root / "data" / "ratings.csv",
                     model_path=project_root / "models" / "svd_model.pkl",
-                    dataset_dir=project_root / "data" / "ml-100k"
+                    dataset_dir=project_root / "data" / "ml-100k",
+                    videos_path=project_root / "data" / "videos.csv",
+                    use_advanced_models=use_advanced_models
                 )
         else:
             # Use recall system only (using absolute path from project root)
             print("Ranking model unavailable, using recall system only")
             project_root = PathLib(__file__).parent.parent.parent
+            # 检查高级模型是否存在
+            two_tower_exists = (project_root / "models" / "two_tower_model.pth").exists()
+            bm25_exists = (project_root / "models" / "bm25_model.pkl").exists()
+            use_advanced_models = two_tower_exists and bm25_exists
+            
             recall_system = MultiRecallSystem(
                 ratings_path=project_root / "data" / "ratings.csv",
                 model_path=project_root / "models" / "svd_model.pkl",
-                dataset_dir=project_root / "data" / "ml-100k"
+                dataset_dir=project_root / "data" / "ml-100k",
+                videos_path=project_root / "data" / "videos.csv",
+                use_advanced_models=use_advanced_models
             )
+        
+        if use_advanced_models:
+            print("✓ Advanced models (Two-Tower, BM25) enabled")
         
         print("✓ Recall system initialized successfully")
         print("Model loading complete, service ready")
@@ -434,7 +459,8 @@ async def get_recommendations(request: RecommendationRequest):
             # 只使用召回系统（按热门度排序）
             candidates = recall_system.multi_recall(
                 request.user_id,
-                request.recall_nums
+                request.recall_nums,
+                use_advanced=request.use_advanced
             )
             
             # 获取视频统计信息用于排序
@@ -544,10 +570,22 @@ async def get_recall_candidates(request: RecallRequest):
         raise HTTPException(status_code=503, detail="Recall system not loaded")
     
     try:
-        # 获取各路召回详情
+        # 获取各路召回详情（支持高级模型）
+        use_advanced = getattr(request, 'use_advanced', False)
+        recall_nums = request.recall_nums
+        if use_advanced and recall_nums is None:
+            recall_nums = {
+                'cf': 100,
+                'popular': 50,
+                'high_rating': 50,
+                'similarity': 50,
+                'two_tower': 200,
+                'bm25': 200
+            }
+        
         recall_details = recall_system.get_recall_details(
             request.user_id,
-            request.recall_nums
+            recall_nums
         )
         
         # 格式化结果
