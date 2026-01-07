@@ -47,10 +47,68 @@ def setup_colab():
         drive_models_dir = Path("/content/drive/MyDrive/youtube-shorts-recommender/models")
         drive_models_dir.mkdir(parents=True, exist_ok=True)
         
-        return drive_models_dir, "/content/drive/MyDrive/youtube-shorts-recommender"
+        drive_base_dir = Path("/content/drive/MyDrive/youtube-shorts-recommender")
+        drive_data_dir = drive_base_dir / "data"
+        
+        return drive_models_dir, drive_base_dir, drive_data_dir
     except Exception as e:
         print(f"⚠ Could not mount Google Drive: {e}")
-        return None, None
+        return None, None, None
+
+
+def find_data_files(local_data_dir):
+    """从多个可能的位置查找数据文件"""
+    import shutil
+    
+    local_data_dir = Path(local_data_dir)
+    local_data_dir.mkdir(exist_ok=True)
+    
+    # 需要的数据文件
+    required_files = ["ratings_kuairec.csv", "videos_kuairec.csv"]
+    
+    # 可能的数据源位置（按优先级排序）
+    possible_sources = []
+    
+    if IN_COLAB:
+        # 1. /content/data/ (用户可能已经复制到这里)
+        possible_sources.append(Path("/content/data"))
+        
+        # 2. 用户指定的Drive路径
+        possible_sources.append(Path("/content/drive/MyDrive/AI/youtobe-shorts-data"))
+        
+        # 3. 默认Drive路径
+        possible_sources.append(Path("/content/drive/MyDrive/youtube-shorts-recommender/data"))
+    
+    # 4. 项目本地data目录
+    possible_sources.append(local_data_dir)
+    
+    copied_files = []
+    for filename in required_files:
+        local_path = local_data_dir / filename
+        
+        # 如果本地已有文件，跳过
+        if local_path.exists():
+            print(f"  ✓ {filename} already exists in {local_data_dir}")
+            continue
+        
+        # 尝试从各个源位置复制
+        found = False
+        for source_dir in possible_sources:
+            source_path = source_dir / filename
+            if source_path.exists():
+                print(f"  📥 Found {filename} in {source_dir}")
+                print(f"     Copying to {local_data_dir}...")
+                shutil.copy(source_path, local_path)
+                copied_files.append(filename)
+                print(f"  ✓ Copied {filename}")
+                found = True
+                break
+        
+        if not found:
+            print(f"  ⚠ {filename} not found in any source location")
+            print(f"     Searched in: {[str(s) for s in possible_sources]}")
+    
+    return len(copied_files) > 0
 
 
 def main():
@@ -62,20 +120,38 @@ def main():
     # 设置Colab环境
     drive_models_dir = None
     drive_base_dir = None
+    drive_data_dir = None
     if IN_COLAB:
-        drive_models_dir, drive_base_dir = setup_colab()
+        drive_models_dir, drive_base_dir, drive_data_dir = setup_colab()
     
     data_dir = Path("data")
     models_dir = Path("models")
     models_dir.mkdir(exist_ok=True)
+    
+    # 尝试从多个位置加载数据
+    if IN_COLAB:
+        print("\n" + "=" * 70)
+        print("Searching for Data Files")
+        print("=" * 70)
+        print("Checking multiple possible locations...")
+        find_data_files(data_dir)
     
     # KuaiRec数据路径
     ratings_path = data_dir / "ratings_kuairec.csv"
     videos_path = data_dir / "videos_kuairec.csv"
     
     if not ratings_path.exists():
-        print(f"Error: {ratings_path} not found!")
-        print("Please run: python3 data_prep_kuairec.py --kuairec_dir 'data/KuaiRec 2.0'")
+        print(f"\n❌ Error: {ratings_path} not found!")
+        if IN_COLAB:
+            print("\nPossible solutions:")
+            print("1. Make sure data files are in Google Drive:")
+            print("   /content/drive/MyDrive/youtube-shorts-recommender/data/")
+            print("   - ratings_kuairec.csv")
+            print("   - videos_kuairec.csv")
+            print("\n2. Or run data preprocessing:")
+            print("   !python3 data_prep_kuairec.py --kuairec_dir 'data/KuaiRec 2.0'")
+        else:
+            print("Please run: python3 data_prep_kuairec.py --kuairec_dir 'data/KuaiRec 2.0'")
         return
     
     print(f"\nUsing data:")

@@ -1,6 +1,38 @@
 # Google Colab 使用指南
 
-## 快速开始
+## 快速开始（数据已在Google Drive）
+
+如果数据已经处理完成并上传到Google Drive，使用以下步骤：
+
+```python
+# 1. 克隆仓库
+!git clone https://github.com/wentao2024/youtube-shorts-recommender.git
+%cd youtube-shorts-recommender
+
+# 2. 安装依赖
+!pip install -r requirements.txt
+
+# 3. 挂载Google Drive
+from google.colab import drive
+drive.mount('/content/drive')
+
+# 4. 开始训练（会自动从Drive加载数据）
+!python3 train_kuairec_colab.py
+```
+
+**数据文件位置**：脚本会自动从以下位置查找数据（按优先级）：
+1. `/content/data/` - 如果已经复制到这里
+2. `/content/drive/MyDrive/AI/youtobe-shorts-data/` - 用户指定的Drive路径
+3. `/content/drive/MyDrive/youtube-shorts-recommender/data/` - 默认Drive路径
+4. 项目目录下的 `data/` - 本地路径
+
+如果数据在其他位置，可以手动复制：
+```python
+!cp /content/drive/MyDrive/AI/youtobe-shorts-data/ratings_kuairec.csv /content/data/
+!cp /content/drive/MyDrive/AI/youtobe-shorts-data/videos_kuairec.csv /content/data/
+```
+
+## 完整流程（从零开始）
 
 ### 1. 克隆仓库
 
@@ -26,6 +58,13 @@
 
 # 预处理数据
 !python3 data_prep_kuairec.py --kuairec_dir "data/KuaiRec 2.0"
+
+# 上传到Google Drive（可选，方便下次使用）
+from google.colab import drive
+drive.mount('/content/drive')
+!mkdir -p /content/drive/MyDrive/youtube-shorts-recommender/data
+!cp data/ratings_kuairec.csv /content/drive/MyDrive/youtube-shorts-recommender/data/
+!cp data/videos_kuairec.csv /content/drive/MyDrive/youtube-shorts-recommender/data/
 ```
 
 ### 4. 训练模型（使用Colab版本）
@@ -39,10 +78,11 @@
 `train_kuairec_colab.py` 相比普通版本有以下优势：
 
 1. **自动检测Colab环境**：自动识别是否在Colab中运行
-2. **自动挂载Google Drive**：训练完成后自动保存模型到Google Drive
-3. **GPU自动检测**：自动使用GPU（如果可用），大幅提升训练速度
-4. **路径自动修复**：自动处理重复克隆导致的路径嵌套问题
-5. **优化的batch size**：根据GPU/CPU自动调整batch size
+2. **自动从Drive加载数据**：如果本地没有数据，自动从Google Drive复制
+3. **自动挂载Google Drive**：训练完成后自动保存模型到Google Drive
+4. **GPU自动检测**：自动使用GPU（如果可用），大幅提升训练速度
+5. **路径自动修复**：自动处理重复克隆导致的路径嵌套问题
+6. **优化的batch size**：根据GPU/CPU自动调整batch size
 
 ## 完整工作流程
 
