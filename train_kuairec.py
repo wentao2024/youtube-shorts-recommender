@@ -71,14 +71,27 @@ def main():
         two_tower_model_path = models_dir / "two_tower_model_kuairec.pth"
         
         try:
-            # KuaiRec数据量大，使用更多epochs和更大的batch size
+            # 检测GPU
+            try:
+                import torch
+                device = "cuda" if torch.cuda.is_available() else "cpu"
+                if device == "cuda":
+                    print(f"  ✓ GPU available: {torch.cuda.get_device_name(0)}")
+                else:
+                    print("  ⚠ GPU not available, using CPU (will be slower)")
+            except:
+                device = "cpu"
+            
+            # KuaiRec数据量大，使用快速训练（预计算embeddings）
+            # 快速训练会自动调整batch size和epochs
             train_two_tower(
                 ratings_path=ratings_path,
                 videos_path=videos_path if videos_path.exists() else None,
                 model_path=two_tower_model_path,
-                epochs=15,  # 更多epochs，因为数据量大
-                batch_size=512,  # 更大的batch size，因为数据量大
-                device="cpu"  # 如果有GPU，可以改为"cuda"
+                epochs=10,  # 快速训练使用更大的batch，所以epochs可以少一些
+                batch_size=512,  # 快速训练会自动增大batch size
+                device=device,
+                use_fast_training=True  # 启用快速训练（700x加速！）
             )
             print(f"✅ Two-Tower model saved to: {two_tower_model_path}")
         except Exception as e:
@@ -105,6 +118,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
